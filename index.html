@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Blur Editor 2.0</title>
+<title>White Space 2.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -233,7 +233,7 @@
 </head>
 <body>
 
-<header><h2>Blur Editor 2.0</h2></header>
+<header><h2>White Space 2.0</h2></header>
 
 <div class="zoom-container" id="zoomContainer">
     <label for="zoomRange">Մասշտաբ:</label>
@@ -833,7 +833,7 @@
 
     downloadBtn.addEventListener('click', () => {
         const a = document.createElement('a');
-        a.download = 'Blurred-Image.png';
+        a.download = 'WS-Image.png';
         a.href = canvas.toDataURL('image/png');
         a.click();
     });
