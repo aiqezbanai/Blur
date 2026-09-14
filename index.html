@@ -3,52 +3,42 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>White Space 2.0</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<title>Blur Editor 2.0</title>
 <style>
     * { box-sizing: border-box; }
 
-    html, body {
-        width: 100%;
-        min-height: 100%;
-        margin: 0;
-    }
-
     body {
+        margin: 0;
+        min-height: 100vh;
         display: flex;
         flex-direction: column;
         align-items: center;
         background: #f0f2f5;
-        font-family: 'Inter', sans-serif;
-        padding: 0 16px 40px;
-        overflow-x: hidden;
+        font-family: Verdana, Geneva, Tahoma, sans-serif;
+        padding-bottom: 40px;
     }
 
     header {
         width: 100%;
         background: #fff;
         box-shadow: 0 2px 4px rgba(0,0,0,.08);
-        padding: clamp(10px, 2vw, 14px) 0;
+        padding: 14px 0;
         text-align: center;
-        margin-bottom: clamp(16px, 3vw, 24px);
+        margin-bottom: 24px;
     }
-    header h2 { margin: 0; font-size: clamp(1rem, 0.8rem + 1vw, 1.3rem); color: #222; }
+    header h2 { margin: 0; font-size: clamp(1rem, 1rem + 1vw, 1.3rem); color: #0075ff; }
 
     .controls {
-        width: 100%;
-        max-width: 1080px;
+        width: 1080px;
         background: #fff;
         border-radius: 8px;
         box-shadow: 0 2px 10px rgba(0,0,0,.1);
-        padding: clamp(10px, 2vw, 14px) clamp(12px, 3vw, 20px);
+        padding: 14px 20px;
         display: none;
-        gap: clamp(8px, 2vw, 16px);
+        gap: 16px;
         align-items: center;
         justify-content: center;
-        flex-wrap: wrap;
-        margin-bottom: clamp(16px, 3vw, 24px);
+        margin-bottom: 24px;
     }
 
     .controls.visible {
@@ -57,7 +47,7 @@
 
     button {
         padding: 8px 16px;
-        background: #007bff;
+        background: #2f3d4b; 
         color: #fff;
         border: none;
         border-radius: 4px;
@@ -66,35 +56,27 @@
         font-family: inherit;
         transition: background .2s;
     }
-    button:hover { background: #0056b3; }
+    button:hover { background: #9acbff; }
     button:disabled { background: #adb5bd; cursor: not-allowed; }
 
+    /* ===== Zoom Bar ===== */
     .zoom-container {
         display: none;
-        width: 100%;
-        max-width: 1080px;
+        width: 1080px;
         justify-content: center;
+        margin-bottom: 12px;
+        gap: 10px;
         align-items: center;
-        gap: clamp(6px, 1.5vw, 10px);
-        margin-bottom: clamp(8px, 2vw, 12px);
     }
     .zoom-container.visible {
         display: flex;
     }
-    .zoom-container label,
-    .zoom-container span {
-        font-size: clamp(0.8rem, 2vw, 0.95rem);
-        font-weight: 600;
-        color: #333;
-        white-space: nowrap;
-    }
 
+    /* ===== Drop Zone ===== */
     .drop-zone {
-        width: 100%;
-        max-width: 920px;
-        min-height: 280px;
-        height: auto;
-        background: #f7f8fc;
+        width: 920px;
+        height: 340px;
+        background: #2f3d4b; // Տեղադրեք նկար կամ սեղմեք՝ վերբեռնելու համար
         border: 2px dashed #ccd3e0;
         border-radius: 10px;
         display: flex;
@@ -105,12 +87,11 @@
         cursor: pointer;
         transition: border-color .15s, background .15s;
         position: relative;
-        padding: 20px;
     }
     .drop-zone.dragover { border-color: #007bff; background: #eef5ff; }
     .drop-zone svg { margin-bottom: 18px; width: 48px; height: 48px; pointer-events: none; }
-    .drop-zone h2 { margin: 0 0 10px; font-size: clamp(1rem, 3vw, 1.2rem); color: #111; pointer-events: none; }
-    .drop-zone p { margin: 0 0 22px; color: #7b8494; font-size: clamp(0.8rem, 2vw, 0.9rem); pointer-events: none; }
+    .drop-zone h2 { margin: 0 0 10px; font-size: 1.2rem; color: #9acbff; pointer-events: none; } 
+    .drop-zone p { margin: 0 0 22px; color: #7b8494; font-size: 0.9rem; pointer-events: none; }
 
     #chooseFileBtn {
         background: #fff;
@@ -127,13 +108,14 @@
 
     .drop-error { display: none; color: #d93025; font-size: .85rem; margin-bottom: 12px; pointer-events: none; }
 
-    .editor { display: none; flex-direction: column; align-items: center; width: 100%; max-width: 1080px; }
-
+    /* ===== Editor ===== */
+    .editor { display: none; flex-direction: column; align-items: center; width: 100%; }
+    
     .canvas-wrap { 
         position: relative; 
         line-height: 0; 
-        width: min(92vw, 1080px);
-        height: min(92vw, 1080px);
+        width: 1080px;
+        height: 1080px;
         overflow: hidden; 
         display: flex; 
         align-items: center; 
@@ -141,15 +123,6 @@
         background: #ddd;
         border-radius: 4px;
         box-shadow: 0 2px 12px rgba(0,0,0,.15);
-        cursor: crosshair;
-    }
-
-    .canvas-wrap.panning {
-        cursor: grab;
-    }
-
-    .canvas-wrap.panning:active {
-        cursor: grabbing;
     }
 
     #canvas {
@@ -157,6 +130,7 @@
         transform-origin: center;
         background: #fff;
         touch-action: none;
+        cursor: crosshair;
     }
 
     #selectionBox {
@@ -167,6 +141,7 @@
         pointer-events: none;
     }
 
+    /* ===== Layers Group ===== */
     .layers-panel {
         display: flex;
         gap: 8px;
@@ -175,8 +150,7 @@
         justify-content: center;
         margin-bottom: 12px;
         min-height: 44px;
-        width: 100%;
-        max-width: 1080px;
+        width: 1080px;
     }
     .layers-empty { font-size: .82rem; color: #8a94a4; align-self: center; }
     .layer-chip {
@@ -208,42 +182,25 @@
     }
     .layer-delete:hover { background: #fdecea; }
 
-    .history-bar {
-        display: flex;
-        gap: 12px;
-        margin-top: clamp(10px, 2vw, 14px);
-        margin-bottom: clamp(10px, 2vw, 14px);
-        flex-wrap: wrap;
-        justify-content: center;
-        width: 100%;
-        max-width: 1080px;
-    }
+    /* ===== Undo / Redo ===== */
+    .history-bar { display: flex; gap: 12px; margin-top: 14px; margin-bottom: 14px; flex-wrap: wrap; justify-content: center; width: 1080px; }
     .history-bar button { display: inline-flex; align-items: center; gap: 8px; }
     .history-bar svg { flex: 0 0 auto; }
-
-    @media (max-width: 600px) {
-        body { padding: 0 10px 30px; }
-        .controls { gap: 6px; }
-        .canvas-wrap { width: 95vw; height: 95vw; }
-        .layer-chip { flex-direction: column; align-items: flex-start; }
-        .layer-opacity input[type="range"] { width: 100%; }
-        .history-bar { gap: 6px; }
-    }
 </style>
 </head>
 <body>
 
-<header><h2>White Space 2.0</h2></header>
+<header><h2>Blur Editor 2.0</h2></header>
 
 <div class="zoom-container" id="zoomContainer">
     <label for="zoomRange">Մասշտաբ:</label>
     <input type="range" id="zoomRange" min="10" max="500" value="100">
-    <span id="zoomVal">100%</span>
+    <span id="zoomVal">100 %</span>
 </div>
 
 <div class="controls" id="controlsSection">
-    <button type="button" id="restartBtn">Հեռացնել պատկերը</button>
-    <button type="button" id="downloadBtn">Ներբեռնել</button>
+    <button type="button" id="restartBtn">🗑️ Հեռացնել պատկերը</button>
+    <button type="button" id="downloadBtn">⬇️ Ներբեռնել</button>
 </div>
 
 <div id="dropZone" class="drop-zone" tabindex="0" role="button" aria-label="Upload image">
@@ -266,6 +223,9 @@
         <canvas id="canvas"></canvas>
         <div id="selectionBox"></div>
     </div>
+	
+	<br>
+	</br>
 
     <div class="history-bar">
         <button type="button" id="undoBtn" title="Նախորդ (Ctrl+Z)" disabled>
@@ -293,7 +253,7 @@
 (() => {
     'use strict';
 
-    const BLUR_RADIUS = 10; // 100% blur strength
+    const BLUR_RADIUS = 10;
     const DEFAULT_OPACITY = 100;
 
     const dropZone        = document.getElementById('dropZone');
@@ -317,12 +277,7 @@
 
     let originalImage = null;
     let selecting = false;
-    let panning = false;
-    let spacePressed = false;
     let startX = 0, startY = 0;
-    let panStartX = 0, panStartY = 0;
-    let panStartPanX = 0, panStartPanY = 0;
-    let panX = 0, panY = 0;
     let nextLayerId = 1;
 
     let layers = [];
@@ -403,8 +358,6 @@
         historyIndex = -1;
         nextLayerId = 1;
         selecting = false;
-        panning = false;
-        spacePressed = false;
         selectionBox.style.display = 'none';
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         layersPanel.innerHTML = '';
@@ -415,9 +368,6 @@
         undoBtn.disabled = true;
         redoBtn.disabled = true;
         fileInput.value = '';
-        panX = 0;
-        panY = 0;
-        updateTransform();
     }
 
     function updateHistoryButtons() {
@@ -445,38 +395,16 @@
     restartBtn.addEventListener('click', restart);
 
     document.addEventListener('keydown', e => {
-        if (e.code === 'Space' && editor.style.display === 'flex') {
-            e.preventDefault();
-        }
-        if (e.code === 'Space' && !spacePressed) {
-            spacePressed = true;
-            canvasWrap.classList.add('panning');
-        }
         if (!(e.ctrlKey || e.metaKey)) return;
         const k = e.key.toLowerCase();
         if (k === 'z') { e.preventDefault(); undo(); }
         else if (k === 'y') { e.preventDefault(); redo(); }
     });
 
-    document.addEventListener('keyup', e => {
-        if (e.code === 'Space') {
-            spacePressed = false;
-            canvasWrap.classList.remove('panning');
-            if (panning) {
-                panning = false;
-            }
-        }
-    });
-
-    function updateTransform() {
-        const scale = parseInt(zoomRange.value, 10) / 100;
-        canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
-    }
-
     function updateZoom() {
         const val = parseInt(zoomRange.value, 10);
+        canvas.style.transform = `scale(${val / 100})`;
         zoomVal.textContent = val + '%';
-        updateTransform();
     }
 
     zoomRange.addEventListener('input', updateZoom);
@@ -617,8 +545,6 @@
                 controlsSection.classList.add('visible');
                 zoomContainer.classList.add('visible');
                 zoomRange.value = 100;
-                panX = 0;
-                panY = 0;
                 updateZoom();
             };
             img.onerror = () => showError('Չհաջողվեց բեռնել նկարը։');
@@ -645,18 +571,6 @@
     function startSelect(e) {
         if (!originalImage) return;
         if (e.type === 'mousedown' && e.button !== 0) return;
-        
-        if (spacePressed) {
-            panning = true;
-            const pt = getPointerXY(e);
-            panStartX = pt.clientX;
-            panStartY = pt.clientY;
-            panStartPanX = panX;
-            panStartPanY = panY;
-            e.preventDefault();
-            return;
-        }
-
         e.preventDefault();
         selecting = true;
         const pt = getPointerXY(e);
@@ -673,17 +587,6 @@
     }
 
     function moveSelect(e) {
-        if (panning) {
-            const pt = getPointerXY(e);
-            const dx = pt.clientX - panStartX;
-            const dy = pt.clientY - panStartY;
-            panX = panStartPanX + dx;
-            panY = panStartPanY + dy;
-            updateTransform();
-            e.preventDefault();
-            return;
-        }
-
         if (!selecting) return;
         const pt = getPointerXY(e);
         const wrapRect = canvasWrap.getBoundingClientRect();
@@ -702,11 +605,6 @@
     }
 
     function endSelect(e) {
-        if (panning) {
-            panning = false;
-            return;
-        }
-
         if (!selecting) return;
         selecting = false;
         selectionBox.style.display = 'none';
@@ -726,102 +624,32 @@
     window.addEventListener('mousemove', moveSelect);
     window.addEventListener('mouseup', endSelect);
     canvas.addEventListener('touchstart', startSelect, { passive: false });
-    window.addEventListener('touchmove', e => { if (selecting || panning) { e.preventDefault(); moveSelect(e); } }, { passive: false });
+    window.addEventListener('touchmove', e => { if (selecting) { e.preventDefault(); moveSelect(e); } }, { passive: false });
     window.addEventListener('touchend', endSelect);
-
-    // Manual separable box blur to ensure cross‑browser/device support
-    function applyBoxBlur(context, width, height, radius) {
-        if (radius <= 0) return;
-        const imageData = context.getImageData(0, 0, width, height);
-        const pixels = imageData.data;
-        const w = width;
-        const h = height;
-        const tmp = new Uint8ClampedArray(pixels.length);
-        const div = 2 * radius + 1;
-
-        // Horizontal pass
-        for (let y = 0; y < h; y++) {
-            let r = 0, g = 0, b = 0, a = 0;
-            for (let i = -radius; i <= radius; i++) {
-                const xi = Math.min(w - 1, Math.max(0, i));
-                const idx = (y * w + xi) * 4;
-                r += pixels[idx]; g += pixels[idx + 1]; b += pixels[idx + 2]; a += pixels[idx + 3];
-            }
-            for (let x = 0; x < w; x++) {
-                const idx = (y * w + x) * 4;
-                tmp[idx] = r / div; tmp[idx + 1] = g / div; tmp[idx + 2] = b / div; tmp[idx + 3] = a / div;
-
-                const addX = x + radius + 1;
-                const removeX = x - radius;
-                if (addX < w) {
-                    const addIdx = (y * w + addX) * 4;
-                    r += pixels[addIdx]; g += pixels[addIdx + 1]; b += pixels[addIdx + 2]; a += pixels[addIdx + 3];
-                }
-                if (removeX >= 0) {
-                    const remIdx = (y * w + removeX) * 4;
-                    r -= pixels[remIdx]; g -= pixels[remIdx + 1]; b -= pixels[remIdx + 2]; a -= pixels[remIdx + 3];
-                }
-            }
-        }
-
-        // Vertical pass
-        for (let x = 0; x < w; x++) {
-            let r = 0, g = 0, b = 0, a = 0;
-            for (let i = -radius; i <= radius; i++) {
-                const yi = Math.min(h - 1, Math.max(0, i));
-                const idx = (yi * w + x) * 4;
-                r += tmp[idx]; g += tmp[idx + 1]; b += tmp[idx + 2]; a += tmp[idx + 3];
-            }
-            for (let y = 0; y < h; y++) {
-                const idx = (y * w + x) * 4;
-                pixels[idx] = r / div; pixels[idx + 1] = g / div; pixels[idx + 2] = b / div; pixels[idx + 3] = a / div;
-
-                const addY = y + radius + 1;
-                const removeY = y - radius;
-                if (addY < h) {
-                    const addIdx = (addY * w + x) * 4;
-                    r += tmp[addIdx]; g += tmp[addIdx + 1]; b += tmp[addIdx + 2]; a += tmp[addIdx + 3];
-                }
-                if (removeY >= 0) {
-                    const remIdx = (removeY * w + x) * 4;
-                    r -= tmp[remIdx]; g -= tmp[remIdx + 1]; b -= tmp[remIdx + 2]; a -= tmp[remIdx + 3];
-                }
-            }
-        }
-
-        context.putImageData(imageData, 0, 0);
-    }
 
     function addBlurRegion(x, y, w, h) {
         w = Math.max(1, w);
         h = Math.max(1, h);
         const pad = BLUR_RADIUS * 3;
-        const bw = w + pad * 2;
-        const bh = h + pad * 2;
+        const bw = w + pad * 2, bh = h + pad * 2;
 
-        const bgColor = getAverageBackgroundColor();
-        const bgFill = `rgb(${bgColor.r}, ${bgColor.g}, ${bgColor.b})`;
-
-        // Create a large canvas, fill with background, draw the surrounding area
         const big = document.createElement('canvas');
         big.width = bw;
         big.height = bh;
         const bctx = big.getContext('2d');
-        bctx.fillStyle = bgFill;
-        bctx.fillRect(0, 0, bw, bh);
+        bctx.filter = 'blur(' + BLUR_RADIUS + 'px)';
         bctx.drawImage(canvas, x - pad, y - pad, bw, bh, 0, 0, bw, bh);
+        bctx.filter = 'none';
 
-        // Apply manual blur to the large canvas
-        applyBoxBlur(bctx, bw, bh, BLUR_RADIUS);
-
-        // Create patch canvas with opaque background and blurred region on top
         const patch = document.createElement('canvas');
         patch.width = w;
         patch.height = h;
         const pctx = patch.getContext('2d');
-        pctx.fillStyle = bgFill;
-        pctx.fillRect(0, 0, w, h);
         pctx.drawImage(big, pad, pad, w, h, 0, 0, w, h);
+        
+        const bgColor = getAverageBackgroundColor();
+        pctx.fillStyle = `rgba(${bgColor.r}, ${bgColor.g}, ${bgColor.b}, 0.5)`;
+        pctx.fillRect(0, 0, w, h);
 
         commit(layers.concat([{
             id: nextLayerId++,
@@ -833,7 +661,7 @@
 
     downloadBtn.addEventListener('click', () => {
         const a = document.createElement('a');
-        a.download = 'WS-Image.png';
+        a.download = 'Blurred-Image.png';
         a.href = canvas.toDataURL('image/png');
         a.click();
     });
