@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ai Qez Blur Editor</title>
+<link rel="icon" type="image/x-icon" href="https://i.ibb.co/tTW7FhZB/ico.jpg">
 <style>
     * { box-sizing: border-box; }
 
@@ -31,7 +32,7 @@
         margin-bottom: 24px;
         flex-shrink: 0;
     }
-    header h2 { margin: 0; font-size: clamp(1rem, 1rem + 1vw, 1.3rem); color: #0075ff; }
+    header h2 { margin: 0; font-size: clamp(1rem, 1rem + 1vw, 1.3rem); color: #2f3d4b; }
 
     .controls {
         width: 1080px;
@@ -62,7 +63,7 @@
         font-family: inherit;
         transition: background .2s;
     }
-    button:hover { background: #9acbff; }
+    button:hover { background: #2f3d4b; }
     button:disabled { background: #adb5bd; cursor: not-allowed; }
 
     /* ===== Zoom Bar ===== */
@@ -83,8 +84,8 @@
     .drop-zone {
         width: 920px;
         height: 340px;
-        background: #2f3d4b;
-        border: 2px dashed #ccd3e0;
+        background: #e2e8f0;
+        border: 2px dashed #2f3d4b;
         border-radius: 10px;
         display: flex;
         flex-direction: column;
@@ -95,15 +96,15 @@
         transition: border-color .15s, background .15s;
         position: relative;
     }
-    .drop-zone.dragover { border-color: #007bff; background: #eef5ff; }
+    .drop-zone.dragover { border-color: #007bff; background: #45596e; }
     .drop-zone svg { margin-bottom: 18px; width: 48px; height: 48px; pointer-events: none; }
-    .drop-zone h2 { margin: 0 0 10px; font-size: 1.2rem; color: #9acbff; pointer-events: none; } 
+    .drop-zone h2 { margin: 0 0 10px; font-size: 1.2rem; color: #2f3d4b; pointer-events: none; } 
     .drop-zone p { margin: 0 0 22px; color: #7b8494; font-size: 0.9rem; pointer-events: none; }
 
     #chooseFileBtn {
-        background: #fff;
-        color: #000;
-        border: 2px solid #000;
+        background: #2f3d4b;
+        color: #e2e8f0;
+        border: 2px solid #e2e8f0;
         border-radius: 6px;
         padding: 10px 26px;
         font-size: 0.9rem;
@@ -111,7 +112,7 @@
         pointer-events: auto;
         z-index: 2;
     }
-    #chooseFileBtn:hover { background: #f2f2f2; }
+    #chooseFileBtn:hover { background: #5d7a96; }
 
     .drop-error { display: none; color: #d93025; font-size: .85rem; margin-bottom: 12px; pointer-events: none; }
 
@@ -211,7 +212,7 @@
 </head>
 <body>
 
-<header><h2>Ai Qez Blur Editor</h2></header>
+<header><img src="https://i.ibb.co/SwsLzJwr/Gemini-Generated-Image-uhnnjwuhnnjwuhnn-Photoroom.png" style="width:120px;height:60px;"></header>
 
 <div class="zoom-container" id="zoomContainer">
     <label for="zoomRange">Մասշտաբ:</label>
@@ -220,8 +221,8 @@
 </div>
 
 <div class="controls" id="controlsSection">
-    <button type="button" id="restartBtn">🗑️ Հեռացնել պատկերը</button>
-    <button type="button" id="downloadBtn">⬇️ Ներբեռնել</button>
+    <button type="button" id="restartBtn">Ջնջել</button>
+    <button type="button" id="downloadBtn">Ներբեռնել</button>
 </div>
 
 <div id="dropZone" class="drop-zone" tabindex="0" role="button" aria-label="Upload image">
@@ -246,21 +247,21 @@
     </div>
 
     <div class="history-bar">
-        <button type="button" id="undoBtn" title="Նախորդ (Ctrl+Z)" disabled>
+        <button type="button" id="undoBtn" title="Հետ (Ctrl+Z)" disabled>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M9 14 4 9l5-5"></path>
                 <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5 5.5 5.5 0 0 1-5.5 5.5H11"></path>
             </svg>
-            Նախորդ
+            Հետ
         </button>
-        <button type="button" id="redoBtn" title="Հաջորդ (Ctrl+Y)" disabled>
+        <button type="button" id="redoBtn" title="Առաջ (Ctrl+Y)" disabled>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="m15 14 5-5-5-5"></path>
                 <path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5 5.5 5.5 0 0 0 9.5 20H13"></path>
             </svg>
-            Հաջորդ
+            Առաջ
         </button>
     </div>
 </div>
@@ -738,42 +739,6 @@
         a.click();
     });
 })();
-	
-// 1. Արգելափակման կոդի սկիզբ
-	document.addEventListener("keydown", function(e) {
-    // 1. Արգելափակել Ctrl+U (Windows/Linux)
-    if (e.ctrlKey && (e.key === "u" || e.key === "U")) {
-        e.preventDefault();
-        return false;
-    }
-
-    // 2. Արգելափակել Option + Cmd + U (Mac) կամ Alt + Meta + U
-    if (e.altKey && e.metaKey && (e.key === "u" || e.key === "U")) {
-        e.preventDefault();
-        return false;
-    }
-
-    // 3. Արգելափակել F12
-    if (e.key === "F12") {
-        e.preventDefault();
-        return false;
-    }
-
-    // 4. Արգելափակել Ctrl + Shift + I (Windows/Linux) կամ Cmd + Option + I (Mac)
-    if ((e.ctrlKey && e.shiftKey && (e.key === "i" || e.key === "I")) ||
-        (e.altKey && e.metaKey && (e.key === "i" || e.key === "I"))) {
-        e.preventDefault();
-        return false;
-    }
-});
-
-// 5. Արգելափակել մկնիկի աջ սեղմակը (Context Menu)
-document.addEventListener("contextmenu", function(e) {
-    e.preventDefault();
-    return false;
-});
-
-	// 1. Արգելափակման կոդի վերջ
 </script>
 </body>
 </html>
