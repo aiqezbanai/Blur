@@ -3,19 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Blur Editor 2.0</title>
+<title>Ai Qez Blur Editor</title>
 <style>
     * { box-sizing: border-box; }
 
-    body {
+    html, body {
         margin: 0;
-        min-height: 100vh;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    body {
         display: flex;
         flex-direction: column;
         align-items: center;
         background: #f0f2f5;
         font-family: Verdana, Geneva, Tahoma, sans-serif;
-        padding-bottom: 40px;
     }
 
     header {
@@ -25,6 +29,7 @@
         padding: 14px 0;
         text-align: center;
         margin-bottom: 24px;
+        flex-shrink: 0;
     }
     header h2 { margin: 0; font-size: clamp(1rem, 1rem + 1vw, 1.3rem); color: #0075ff; }
 
@@ -39,6 +44,7 @@
         align-items: center;
         justify-content: center;
         margin-bottom: 24px;
+        flex-shrink: 0;
     }
 
     .controls.visible {
@@ -67,6 +73,7 @@
         margin-bottom: 12px;
         gap: 10px;
         align-items: center;
+        flex-shrink: 0;
     }
     .zoom-container.visible {
         display: flex;
@@ -76,7 +83,7 @@
     .drop-zone {
         width: 920px;
         height: 340px;
-        background: #2f3d4b; // Տեղադրեք նկար կամ սեղմեք՝ վերբեռնելու համար
+        background: #2f3d4b;
         border: 2px dashed #ccd3e0;
         border-radius: 10px;
         display: flex;
@@ -109,20 +116,28 @@
     .drop-error { display: none; color: #d93025; font-size: .85rem; margin-bottom: 12px; pointer-events: none; }
 
     /* ===== Editor ===== */
-    .editor { display: none; flex-direction: column; align-items: center; width: 100%; }
+    .editor { display: none; flex-direction: column; align-items: center; width: 100%; flex-grow: 1; overflow: hidden; }
     
     .canvas-wrap { 
         position: relative; 
         line-height: 0; 
         width: 1080px;
-        height: 1080px;
-        overflow: hidden; 
+        height: 600px;
+        overflow: auto; 
         display: flex; 
         align-items: center; 
         justify-content: center;
         background: #ddd;
         border-radius: 4px;
         box-shadow: 0 2px 12px rgba(0,0,0,.15);
+        cursor: default;
+    }
+
+    .canvas-wrap.space-active {
+        cursor: grab !important;
+    }
+    .canvas-wrap.space-active:active {
+        cursor: grabbing !important;
     }
 
     #canvas {
@@ -131,6 +146,11 @@
         background: #fff;
         touch-action: none;
         cursor: crosshair;
+    }
+
+    .canvas-wrap.space-active #canvas {
+        cursor: grab !important;
+        pointer-events: none;
     }
 
     #selectionBox {
@@ -151,6 +171,7 @@
         margin-bottom: 12px;
         min-height: 44px;
         width: 1080px;
+        flex-shrink: 0;
     }
     .layers-empty { font-size: .82rem; color: #8a94a4; align-self: center; }
     .layer-chip {
@@ -183,14 +204,14 @@
     .layer-delete:hover { background: #fdecea; }
 
     /* ===== Undo / Redo ===== */
-    .history-bar { display: flex; gap: 12px; margin-top: 14px; margin-bottom: 14px; flex-wrap: wrap; justify-content: center; width: 1080px; }
+    .history-bar { display: flex; gap: 12px; margin-top: 14px; margin-bottom: 14px; flex-wrap: wrap; justify-content: center; width: 1080px; flex-shrink: 0; }
     .history-bar button { display: inline-flex; align-items: center; gap: 8px; }
     .history-bar svg { flex: 0 0 auto; }
 </style>
 </head>
 <body>
 
-<header><h2>Blur Editor 2.0</h2></header>
+<header><h2>Ai Qez Blur Editor</h2></header>
 
 <div class="zoom-container" id="zoomContainer">
     <label for="zoomRange">Մասշտաբ:</label>
@@ -223,9 +244,6 @@
         <canvas id="canvas"></canvas>
         <div id="selectionBox"></div>
     </div>
-	
-	<br>
-	</br>
 
     <div class="history-bar">
         <button type="button" id="undoBtn" title="Նախորդ (Ctrl+Z)" disabled>
@@ -283,6 +301,13 @@
     let layers = [];
     const history = [];
     let historyIndex = -1;
+
+    let isSpacePressed = false;
+    let isPanning = false;
+    let panStartX = 0;
+    let panStartY = 0;
+    let scrollLeftStart = 0;
+    let scrollTopStart = 0;
 
     function getAverageBackgroundColor() {
         if (!originalImage) return { r: 255, g: 255, b: 255 };
@@ -395,10 +420,28 @@
     restartBtn.addEventListener('click', restart);
 
     document.addEventListener('keydown', e => {
+        if (e.code === 'Space' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+            if (!isSpacePressed) {
+                isSpacePressed = true;
+                canvasWrap.classList.add('space-active');
+            }
+            e.preventDefault();
+        }
+
         if (!(e.ctrlKey || e.metaKey)) return;
         const k = e.key.toLowerCase();
         if (k === 'z') { e.preventDefault(); undo(); }
         else if (k === 'y') { e.preventDefault(); redo(); }
+    });
+
+    document.addEventListener('keyup', e => {
+        if (e.code === 'Space') {
+            isSpacePressed = false;
+            canvasWrap.classList.remove('space-active');
+            if (isPanning) {
+                isPanning = false;
+            }
+        }
     });
 
     function updateZoom() {
@@ -571,6 +614,17 @@
     function startSelect(e) {
         if (!originalImage) return;
         if (e.type === 'mousedown' && e.button !== 0) return;
+        
+        if (isSpacePressed) {
+            isPanning = true;
+            panStartX = e.clientX;
+            panStartY = e.clientY;
+            scrollLeftStart = canvasWrap.scrollLeft;
+            scrollTopStart = canvasWrap.scrollTop;
+            e.preventDefault();
+            return;
+        }
+
         e.preventDefault();
         selecting = true;
         const pt = getPointerXY(e);
@@ -579,14 +633,27 @@
         startY = p.y;
         
         const wrapRect = canvasWrap.getBoundingClientRect();
+        const canvasRect = canvas.getBoundingClientRect();
+        
+        const startClientX = canvasRect.left + (startX / canvas.width) * canvasRect.width;
+        const startClientY = canvasRect.top + (startY / canvas.height) * canvasRect.height;
+
         selectionBox.style.display = 'block';
-        selectionBox.style.left = (pt.clientX - wrapRect.left) + 'px';
-        selectionBox.style.top  = (pt.clientY - wrapRect.top)  + 'px';
+        selectionBox.style.left = (startClientX - wrapRect.left + canvasWrap.scrollLeft) + 'px';
+        selectionBox.style.top  = (startClientY - wrapRect.top + canvasWrap.scrollTop)   + 'px';
         selectionBox.style.width  = '0px';
         selectionBox.style.height = '0px';
     }
 
     function moveSelect(e) {
+        if (isPanning) {
+            const dx = e.clientX - panStartX;
+            const dy = e.clientY - panStartY;
+            canvasWrap.scrollLeft = scrollLeftStart - dx;
+            canvasWrap.scrollTop = scrollTopStart - dy;
+            return;
+        }
+
         if (!selecting) return;
         const pt = getPointerXY(e);
         const wrapRect = canvasWrap.getBoundingClientRect();
@@ -598,13 +665,18 @@
         const startClientX = canvasRect.left + (startX / canvas.width) * canvasRect.width;
         const startClientY = canvasRect.top + (startY / canvas.height) * canvasRect.height;
 
-        selectionBox.style.left   = (Math.min(startClientX, cx) - wrapRect.left) + 'px';
-        selectionBox.style.top    = (Math.min(startClientY, cy) - wrapRect.top)  + 'px';
+        selectionBox.style.left   = (Math.min(startClientX, cx) - wrapRect.left + canvasWrap.scrollLeft) + 'px';
+        selectionBox.style.top    = (Math.min(startClientY, cy) - wrapRect.top + canvasWrap.scrollTop)   + 'px';
         selectionBox.style.width  = Math.abs(cx - startClientX) + 'px';
         selectionBox.style.height = Math.abs(cy - startClientY) + 'px';
     }
 
     function endSelect(e) {
+        if (isPanning) {
+            isPanning = false;
+            return;
+        }
+
         if (!selecting) return;
         selecting = false;
         selectionBox.style.display = 'none';
@@ -620,11 +692,11 @@
         addBlurRegion(Math.round(rx), Math.round(ry), Math.round(rw), Math.round(rh));
     }
 
-    canvas.addEventListener('mousedown', startSelect);
+    canvasWrap.addEventListener('mousedown', startSelect);
     window.addEventListener('mousemove', moveSelect);
     window.addEventListener('mouseup', endSelect);
     canvas.addEventListener('touchstart', startSelect, { passive: false });
-    window.addEventListener('touchmove', e => { if (selecting) { e.preventDefault(); moveSelect(e); } }, { passive: false });
+    window.addEventListener('touchmove', e => { if (selecting || isPanning) { e.preventDefault(); moveSelect(e); } }, { passive: false });
     window.addEventListener('touchend', endSelect);
 
     function addBlurRegion(x, y, w, h) {
@@ -666,6 +738,42 @@
         a.click();
     });
 })();
+	
+// 1. Արգելափակման կոդի սկիզբ
+	document.addEventListener("keydown", function(e) {
+    // 1. Արգելափակել Ctrl+U (Windows/Linux)
+    if (e.ctrlKey && (e.key === "u" || e.key === "U")) {
+        e.preventDefault();
+        return false;
+    }
+
+    // 2. Արգելափակել Option + Cmd + U (Mac) կամ Alt + Meta + U
+    if (e.altKey && e.metaKey && (e.key === "u" || e.key === "U")) {
+        e.preventDefault();
+        return false;
+    }
+
+    // 3. Արգելափակել F12
+    if (e.key === "F12") {
+        e.preventDefault();
+        return false;
+    }
+
+    // 4. Արգելափակել Ctrl + Shift + I (Windows/Linux) կամ Cmd + Option + I (Mac)
+    if ((e.ctrlKey && e.shiftKey && (e.key === "i" || e.key === "I")) ||
+        (e.altKey && e.metaKey && (e.key === "i" || e.key === "I"))) {
+        e.preventDefault();
+        return false;
+    }
+});
+
+// 5. Արգելափակել մկնիկի աջ սեղմակը (Context Menu)
+document.addEventListener("contextmenu", function(e) {
+    e.preventDefault();
+    return false;
+});
+
+	// 1. Արգելափակման կոդի վերջ
 </script>
 </body>
 </html>
